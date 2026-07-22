@@ -10,3 +10,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Users can now see the list of metrics available on the connected Prometheus server.
+- Users can now log in with a username and password to access a Prometheus server that requires basic authentication, or continue without logging in if none is required.

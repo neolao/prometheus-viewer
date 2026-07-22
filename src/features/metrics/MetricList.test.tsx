@@ -53,4 +53,22 @@ describe("MetricList", () => {
 			expect(screen.getByRole("alert")).toHaveTextContent("network error");
 		});
 	});
+
+	it("passes the provided credentials to fetchMetricNames", async () => {
+		mockedFetchMetricNames.mockResolvedValue([]);
+
+		render(
+			<MetricList
+				baseUrl="http://localhost:9090"
+				credentials={{ username: "alice", password: "s3cret" }}
+			/>,
+		);
+
+		await waitFor(() => {
+			expect(mockedFetchMetricNames).toHaveBeenCalledWith(
+				"http://localhost:9090",
+				{ username: "alice", password: "s3cret" },
+			);
+		});
+	});
 });

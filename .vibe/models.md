@@ -10,6 +10,22 @@
 
 Defined in: `src/api/prometheus.ts`
 
+## PrometheusCredentials
+| Field | Type | Notes |
+|---|---|---|
+| username | `string` | |
+| password | `string` | Held only in memory, never persisted by the app |
+
+Defined in: `src/api/prometheus.ts`
+
+## App auth state
+| Field | Type | Notes |
+|---|---|---|
+| status | `"pending" \| "skipped" \| "authenticated"` | Discriminant |
+| credentials | `PrometheusCredentials` | Present when `status === "authenticated"` |
+
+Defined in: `src/App.tsx`
+
 ## MetricList load state
 | Field | Type | Notes |
 |---|---|---|
