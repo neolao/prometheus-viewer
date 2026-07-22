@@ -1,5 +1,11 @@
 import path from "node:path";
+import { config as loadEnvFile } from "dotenv";
 import { createApp } from "./createApp.js";
+
+// Same convention as Vite: .env first, then .env.local overrides it
+// (.env.local is gitignored — see .env.example).
+loadEnvFile();
+loadEnvFile({ path: ".env.local", override: true });
 
 const port = Number(process.env.PORT ?? 3000);
 const prometheusUrl = process.env.PROMETHEUS_URL ?? "http://localhost:9090";
