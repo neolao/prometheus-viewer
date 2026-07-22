@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-07-23
+
 ### Added
 
 - Users can now see the list of metrics available on the connected Prometheus server.
@@ -15,3 +17,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - The server now actually reads configuration from `.env`/`.env.local` — it was silently ignoring both files.
+
+[Unreleased]: https://github.com/neolao/prometheus-viewer/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/neolao/prometheus-viewer/releases/tag/v0.1.0
