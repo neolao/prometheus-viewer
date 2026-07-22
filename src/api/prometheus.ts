@@ -5,23 +5,8 @@ interface PrometheusLabelValuesResponse {
 	errorType?: string;
 }
 
-export interface PrometheusCredentials {
-	username: string;
-	password: string;
-}
-
-export async function fetchMetricNames(
-	baseUrl: string,
-	credentials?: PrometheusCredentials,
-): Promise<string[]> {
-	const url = `${baseUrl}/api/v1/label/__name__/values`;
-	const response = credentials
-		? await fetch(url, {
-				headers: {
-					Authorization: `Basic ${btoa(`${credentials.username}:${credentials.password}`)}`,
-				},
-			})
-		: await fetch(url);
+export async function fetchMetricNames(baseUrl: string): Promise<string[]> {
+	const response = await fetch(`${baseUrl}/api/v1/label/__name__/values`);
 
 	if (!response.ok) {
 		throw new Error(

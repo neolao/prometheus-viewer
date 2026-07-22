@@ -10,22 +10,6 @@
 
 Defined in: `src/api/prometheus.ts`
 
-## PrometheusCredentials
-| Field | Type | Notes |
-|---|---|---|
-| username | `string` | |
-| password | `string` | Held only in memory, never persisted by the app |
-
-Defined in: `src/api/prometheus.ts`
-
-## App auth state
-| Field | Type | Notes |
-|---|---|---|
-| status | `"pending" \| "skipped" \| "authenticated"` | Discriminant |
-| credentials | `PrometheusCredentials` | Present when `status === "authenticated"` |
-
-Defined in: `src/App.tsx`
-
 ## MetricList load state
 | Field | Type | Notes |
 |---|---|---|
@@ -34,3 +18,14 @@ Defined in: `src/App.tsx`
 | message | `string` | Present when `status === "error"` |
 
 Defined in: `src/features/metrics/MetricList.tsx`
+
+## CreateAppOptions
+| Field | Type | Notes |
+|---|---|---|
+| prometheusUrl | `string` | Real Prometheus server the proxy relays to |
+| prometheusUsername | `string` (optional) | Injected as HTTP Basic auth when paired with `prometheusPassword` |
+| prometheusPassword | `string` (optional) | Never sent to or read by the client |
+| viteMiddleware | `RequestHandler` (optional) | Dev mode — Vite's middleware-mode handler |
+| distDir | `string` (optional) | Prod mode — directory of the built static frontend |
+
+Defined in: `server/createApp.ts`

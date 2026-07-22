@@ -1,12 +1,8 @@
 import { useEffect, useState } from "react";
-import {
-	fetchMetricNames,
-	type PrometheusCredentials,
-} from "../../api/prometheus";
+import { fetchMetricNames } from "../../api/prometheus";
 
 interface MetricListProps {
 	baseUrl: string;
-	credentials?: PrometheusCredentials;
 }
 
 type LoadState =
@@ -14,14 +10,14 @@ type LoadState =
 	| { status: "success"; metricNames: string[] }
 	| { status: "error"; message: string };
 
-export function MetricList({ baseUrl, credentials }: MetricListProps) {
+export function MetricList({ baseUrl }: MetricListProps) {
 	const [state, setState] = useState<LoadState>({ status: "loading" });
 
 	useEffect(() => {
 		let cancelled = false;
 		setState({ status: "loading" });
 
-		fetchMetricNames(baseUrl, credentials)
+		fetchMetricNames(baseUrl)
 			.then((metricNames) => {
 				if (!cancelled) {
 					setState({ status: "success", metricNames });
@@ -38,7 +34,7 @@ export function MetricList({ baseUrl, credentials }: MetricListProps) {
 		return () => {
 			cancelled = true;
 		};
-	}, [baseUrl, credentials]);
+	}, [baseUrl]);
 
 	if (state.status === "loading") {
 		return <p>Chargement des métriques…</p>;

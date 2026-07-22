@@ -1,6 +1,6 @@
 ---
 date: 2026-07-23
-status: accepted
+status: superseded by 003
 ---
 # Rely on the browser's password manager, never persist credentials ourselves
 

@@ -5,26 +5,31 @@
 
 ## Project overview
 
-Une web UI qui consomme l'API Prometheus pour visualiser des métriques et exécuter des requêtes PromQL. Projet initialisé vide et bootstrappé avec Vite + React + TypeScript.
+Une web UI qui consomme l'API Prometheus pour visualiser des métriques et exécuter des requêtes PromQL. Un serveur Node.js (utilisé en dev comme en prod) sert le frontend et relaie les requêtes vers Prometheus en y injectant lui-même l'authentification HTTP Basic configurée côté serveur — le navigateur ne parle jamais directement à Prometheus et n'a jamais accès aux identifiants (voir `.vibe/decisions/003-node-server-injects-prometheus-credentials.md`).
 
-**Stack:** Node.js 22 / TypeScript / React 19 / Vite / Vitest + Testing Library / Biome
-**Type:** frontend (single-page web app)
+**Stack:** Node.js 22 / TypeScript / React 19 / Vite / Express / Vitest + Testing Library + Supertest / Biome
+**Type:** full-stack (frontend SPA + serveur Node.js/Express)
 
 ## Architecture
 
 ```
 prometheus-viewer/
 ├── src/
-│   ├── main.tsx        # point d'entrée, monte <App /> dans #root
-│   ├── App.tsx          # composant racine
-│   ├── App.test.tsx      # tests du composant racine
-│   ├── index.css         # styles globaux
-│   └── test/setup.ts      # setup Vitest (jest-dom)
-├── public/               # assets statiques servis tels quels (favicon.svg)
-├── index.html            # template HTML de Vite
-├── vite.config.ts        # config Vite + Vitest (environment jsdom)
-├── biome.json            # config lint/format Biome
-└── tsconfig*.json        # config TypeScript
+│   ├── main.tsx                  # point d'entrée, monte <App /> dans #root
+│   ├── App.tsx                    # composant racine
+│   ├── App.test.tsx                # tests du composant racine
+│   ├── index.css                   # styles globaux
+│   ├── api/prometheus.ts            # client HTTP vers /prom-api (le proxy du serveur)
+│   ├── features/metrics/            # affichage de la liste des métriques
+│   └── test/setup.ts                # setup Vitest (jest-dom)
+├── server/
+│   ├── index.ts                   # point d'entrée du serveur (dev: middleware Vite / prod: fichiers statiques)
+│   └── createApp.ts                # fabrique de l'app Express + proxy Prometheus authentifié
+├── public/                        # assets statiques servis tels quels (favicon.svg)
+├── index.html                     # template HTML de Vite
+├── vite.config.ts                 # config Vite + Vitest (environment jsdom par défaut)
+├── biome.json                     # config lint/format Biome
+└── tsconfig*.json                 # config TypeScript
 ```
 
 <!-- The import below loads the compact codebase map into every session. It is maintained by /vibe:sync; details (modules/, models.md, glossary.md) stay on-demand. -->
@@ -76,8 +81,8 @@ If tests or lint fail:
 
 ## Testing conventions
 
-- Test location: co-located with source, `src/**/*.test.tsx` (or `.test.ts`)
-- Test runner: Vitest (`environment: jsdom`, `globals: true`) + `@testing-library/react`
+- Test location: co-located with source, `src/**/*.test.tsx` / `server/**/*.test.ts`
+- Test runner: Vitest — `environment: jsdom` (default, for `src/`) + `@testing-library/react`; server tests opt into `// @vitest-environment node` and use `supertest`
 - One test file per source module
 - Test names must describe behavior: `"returns empty list when input is empty"` not `"works"`
 - Always cover: happy path + at least 2 edge cases + error/invalid input (including Prometheus API errors: network failure, non-2xx response, malformed payload)
@@ -85,7 +90,8 @@ If tests or lint fail:
 ## Constraints
 
 - Never leave dead code or unused imports
-- Never hardcode secrets or Prometheus endpoint credentials — use environment variables (e.g. `VITE_PROMETHEUS_URL`)
+- Never hardcode secrets or Prometheus credentials — configure them via server-only environment variables (`PROMETHEUS_URL`, `PROMETHEUS_USERNAME`, `PROMETHEUS_PASSWORD`, see `.env.example`), **never** with a `VITE_` prefix — anything prefixed `VITE_` is bundled into the public client JS and readable by any visitor
+- The browser must never call a Prometheus server directly or hold its credentials — always go through this app's own server proxy (`/prom-api`)
 - Never skip tests to meet a deadline — fix the code instead
 - Style is enforced by tooling, not by convention — always run `npm run lint` before presenting results
 
@@ -108,7 +114,7 @@ Agents active for `/vibe:review` on this project:
 | `vibe:review-solid` | ❌ | inactive: functional React components, no explicit OO/modular architecture yet |
 | `vibe:review-ddd` | ❌ | inactive: no explicit domain layer |
 | `vibe:review-architecture` | ✅ | active: `.vibe/` created by `/vibe:sync` |
-| `vibe:review-performance` | ❌ | inactive: client-only SPA, no server/API backend in this repo |
+| `vibe:review-performance` | ✅ | active: the project now runs a Node.js/Express server (full-stack) |
 | `vibe:review-web-security` | ✅ | active: project is a web app with an HTTP-facing UI |
 | `vibe:review-pentest` | ✅ | active: `npm run dev` launches a runnable local web app that can be probed |
 | `vibe:review-hexagonal` | ❌ | inactive: no hexagonal architecture declared |

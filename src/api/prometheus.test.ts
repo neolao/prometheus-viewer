@@ -56,23 +56,6 @@ describe("fetchMetricNames", () => {
 		expect(result).toEqual([]);
 	});
 
-	it("sends a Basic Authorization header when credentials are provided", async () => {
-		const fetchMock = mockFetchOnce({
-			ok: true,
-			json: () => Promise.resolve({ status: "success", data: [] }),
-		});
-
-		await fetchMetricNames("http://localhost:9090", {
-			username: "alice",
-			password: "s3cret",
-		});
-
-		expect(fetchMock).toHaveBeenCalledWith(
-			"http://localhost:9090/api/v1/label/__name__/values",
-			{ headers: { Authorization: `Basic ${btoa("alice:s3cret")}` } },
-		);
-	});
-
 	it("throws when the HTTP response is not ok", async () => {
 		mockFetchOnce({
 			ok: false,
@@ -100,22 +83,6 @@ describe("fetchMetricNames", () => {
 		await expect(fetchMetricNames("http://localhost:9090")).rejects.toThrow(
 			"unknown label name",
 		);
-	});
-
-	it("throws with status 401 when credentials are rejected", async () => {
-		mockFetchOnce({
-			ok: false,
-			status: 401,
-			statusText: "Unauthorized",
-			json: () => Promise.resolve({}),
-		});
-
-		await expect(
-			fetchMetricNames("http://localhost:9090", {
-				username: "alice",
-				password: "wrong",
-			}),
-		).rejects.toThrow("401");
 	});
 
 	it("propagates a network failure", async () => {
