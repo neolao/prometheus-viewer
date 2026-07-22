@@ -11,3 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Users can now see the list of metrics available on the connected Prometheus server.
 - The app now connects to Prometheus servers that require a username and password, configured once by whoever runs the app — no login step is needed in the browser.
+
+### Fixed
+
+- The server now actually reads configuration from `.env`/`.env.local` — it was silently ignoring both files.
