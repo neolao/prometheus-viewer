@@ -43,5 +43,9 @@ describe("App", () => {
 
 		expect(await screen.findByText("http_requests_total")).toBeInTheDocument();
 		expect(screen.getByText("retrogaming")).toBeInTheDocument();
+		expect(mockedFetchMetricNames).toHaveBeenCalledWith(
+			"/prom-api",
+			"retrogaming",
+		);
 	});
 });

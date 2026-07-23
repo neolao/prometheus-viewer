@@ -24,7 +24,7 @@ function App() {
 						Selected machine: <strong>{selectedMachine}</strong>
 					</p>
 					<h2>Available metrics</h2>
-					<MetricList baseUrl={prometheusBaseUrl} />
+					<MetricList baseUrl={prometheusBaseUrl} machine={selectedMachine} />
 				</>
 			)}
 		</main>

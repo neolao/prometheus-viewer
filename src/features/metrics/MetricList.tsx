@@ -3,6 +3,7 @@ import { fetchMetricNames } from "../../api/prometheus";
 
 interface MetricListProps {
 	baseUrl: string;
+	machine: string;
 }
 
 type LoadState =
@@ -10,14 +11,14 @@ type LoadState =
 	| { status: "success"; metricNames: string[] }
 	| { status: "error"; message: string };
 
-export function MetricList({ baseUrl }: MetricListProps) {
+export function MetricList({ baseUrl, machine }: MetricListProps) {
 	const [state, setState] = useState<LoadState>({ status: "loading" });
 
 	useEffect(() => {
 		let cancelled = false;
 		setState({ status: "loading" });
 
-		fetchMetricNames(baseUrl)
+		fetchMetricNames(baseUrl, machine)
 			.then((metricNames) => {
 				if (!cancelled) {
 					setState({ status: "success", metricNames });
@@ -34,7 +35,7 @@ export function MetricList({ baseUrl }: MetricListProps) {
 		return () => {
 			cancelled = true;
 		};
-	}, [baseUrl]);
+	}, [baseUrl, machine]);
 
 	if (state.status === "loading") {
 		return <p>Chargement des métriques…</p>;
@@ -45,7 +46,7 @@ export function MetricList({ baseUrl }: MetricListProps) {
 	}
 
 	if (state.metricNames.length === 0) {
-		return <p>Aucune métrique disponible.</p>;
+		return <p>Aucune métrique disponible pour cette machine.</p>;
 	}
 
 	return (

@@ -95,6 +95,48 @@ describe("fetchMetricNames", () => {
 			"network error",
 		);
 	});
+
+	it("requests the label values endpoint with a match[] filter scoped to the given machine", async () => {
+		const fetchMock = mockFetchOnce({
+			ok: true,
+			json: () => Promise.resolve({ status: "success", data: [] }),
+		});
+
+		await fetchMetricNames("http://localhost:9090", "retrogaming");
+
+		expect(fetchMock).toHaveBeenCalledWith(
+			"http://localhost:9090/api/v1/label/__name__/values?match%5B%5D=%7Bhost%3D%22retrogaming%22%7D",
+		);
+	});
+
+	it("scopes the match[] filter to the exact machine name passed in", async () => {
+		const fetchMock = mockFetchOnce({
+			ok: true,
+			json: () => Promise.resolve({ status: "success", data: [] }),
+		});
+
+		await fetchMetricNames("http://localhost:9090", "workstation");
+
+		expect(fetchMock).toHaveBeenCalledWith(
+			"http://localhost:9090/api/v1/label/__name__/values?match%5B%5D=%7Bhost%3D%22workstation%22%7D",
+		);
+	});
+
+	it("throws with the Prometheus error message when the API reports an error status for a machine-filtered request", async () => {
+		mockFetchOnce({
+			ok: true,
+			json: () =>
+				Promise.resolve({
+					status: "error",
+					errorType: "bad_data",
+					error: "unknown label name",
+				}),
+		});
+
+		await expect(
+			fetchMetricNames("http://localhost:9090", "retrogaming"),
+		).rejects.toThrow("unknown label name");
+	});
 });
 
 describe("fetchMachines", () => {

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Users can now select which machine to work on before browsing its metrics; the choice stays visible while navigating.
+- The metric list now only shows metrics exposed by the selected machine, with a clear message when that machine has none.
 
 ## [0.1.0] - 2026-07-23
 

@@ -8,8 +8,14 @@ interface PrometheusLabelValuesResponse {
 async function fetchLabelValues(
 	baseUrl: string,
 	labelName: string,
+	matchSelector?: string,
 ): Promise<string[]> {
-	const response = await fetch(`${baseUrl}/api/v1/label/${labelName}/values`);
+	const query = matchSelector
+		? `?${new URLSearchParams({ "match[]": matchSelector }).toString()}`
+		: "";
+	const response = await fetch(
+		`${baseUrl}/api/v1/label/${labelName}/values${query}`,
+	);
 
 	if (!response.ok) {
 		throw new Error(
@@ -26,8 +32,12 @@ async function fetchLabelValues(
 	return body.data ?? [];
 }
 
-export function fetchMetricNames(baseUrl: string): Promise<string[]> {
-	return fetchLabelValues(baseUrl, "__name__");
+export function fetchMetricNames(
+	baseUrl: string,
+	machine?: string,
+): Promise<string[]> {
+	const matchSelector = machine ? `{host="${machine}"}` : undefined;
+	return fetchLabelValues(baseUrl, "__name__", matchSelector);
 }
 
 export function fetchMachines(baseUrl: string): Promise<string[]> {
