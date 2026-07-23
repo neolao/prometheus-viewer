@@ -13,6 +13,7 @@ type LoadState =
 
 export function MetricList({ baseUrl, machine }: MetricListProps) {
 	const [state, setState] = useState<LoadState>({ status: "loading" });
+	const [searchText, setSearchText] = useState("");
 
 	useEffect(() => {
 		let cancelled = false;
@@ -49,11 +50,27 @@ export function MetricList({ baseUrl, machine }: MetricListProps) {
 		return <p>Aucune métrique disponible pour cette machine.</p>;
 	}
 
+	const filteredMetricNames = state.metricNames.filter((metricName) =>
+		metricName.toLowerCase().includes(searchText.toLowerCase()),
+	);
+
 	return (
-		<ul>
-			{state.metricNames.map((metricName) => (
-				<li key={metricName}>{metricName}</li>
-			))}
-		</ul>
+		<>
+			<input
+				type="search"
+				aria-label="Search metrics"
+				value={searchText}
+				onChange={(event) => setSearchText(event.target.value)}
+			/>
+			{filteredMetricNames.length === 0 ? (
+				<p>No metric matches "{searchText}".</p>
+			) : (
+				<ul>
+					{filteredMetricNames.map((metricName) => (
+						<li key={metricName}>{metricName}</li>
+					))}
+				</ul>
+			)}
+		</>
 	);
 }

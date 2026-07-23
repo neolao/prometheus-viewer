@@ -6,7 +6,7 @@
 - [`modules/server.md`](modules/server.md) — Node.js server (dev + prod) serving the frontend and proxying/authenticating to Prometheus
 - [`modules/api-prometheus.md`](modules/api-prometheus.md) — client-side calls to this app's own server proxy (metric names optionally scoped by machine, machine/host names)
 - [`modules/machines.md`](modules/machines.md) — lets the user pick which Prometheus machine to work on
-- [`modules/metrics.md`](modules/metrics.md) — fetches and displays the list of Prometheus metrics exposed by the selected machine
+- [`modules/metrics.md`](modules/metrics.md) — fetches and displays the list of Prometheus metrics exposed by the selected machine, with client-side text search to narrow it further
 
 ## Observed patterns
 - React 19 functional components, no class components

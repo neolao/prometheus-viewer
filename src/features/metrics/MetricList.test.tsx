@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fetchMetricNames } from "../../api/prometheus";
 import { MetricList } from "./MetricList";
@@ -102,5 +102,96 @@ describe("MetricList", () => {
 		await waitFor(() => {
 			expect(screen.getByRole("alert")).toHaveTextContent("network error");
 		});
+	});
+
+	it("filters the displayed metrics to those matching the typed search text", async () => {
+		mockedFetchMetricNames.mockResolvedValue([
+			"http_requests_total",
+			"process_cpu_seconds_total",
+			"http_response_size_bytes",
+		]);
+
+		render(
+			<MetricList baseUrl="http://localhost:9090" machine="retrogaming" />,
+		);
+		await screen.findByText("http_requests_total");
+
+		fireEvent.change(screen.getByRole("searchbox"), {
+			target: { value: "http_" },
+		});
+
+		expect(screen.getByText("http_requests_total")).toBeInTheDocument();
+		expect(screen.getByText("http_response_size_bytes")).toBeInTheDocument();
+		expect(
+			screen.queryByText("process_cpu_seconds_total"),
+		).not.toBeInTheDocument();
+	});
+
+	it("matches search text regardless of letter case", async () => {
+		mockedFetchMetricNames.mockResolvedValue(["http_requests_total"]);
+
+		render(
+			<MetricList baseUrl="http://localhost:9090" machine="retrogaming" />,
+		);
+		await screen.findByText("http_requests_total");
+
+		fireEvent.change(screen.getByRole("searchbox"), {
+			target: { value: "HTTP_REQUESTS" },
+		});
+
+		expect(screen.getByText("http_requests_total")).toBeInTheDocument();
+	});
+
+	it("shows the full machine-scoped list again when the search field is cleared", async () => {
+		mockedFetchMetricNames.mockResolvedValue([
+			"http_requests_total",
+			"process_cpu_seconds_total",
+		]);
+
+		render(
+			<MetricList baseUrl="http://localhost:9090" machine="retrogaming" />,
+		);
+		await screen.findByText("http_requests_total");
+		const searchField = screen.getByRole("searchbox");
+
+		fireEvent.change(searchField, { target: { value: "http_" } });
+		expect(
+			screen.queryByText("process_cpu_seconds_total"),
+		).not.toBeInTheDocument();
+
+		fireEvent.change(searchField, { target: { value: "" } });
+
+		expect(screen.getByText("http_requests_total")).toBeInTheDocument();
+		expect(screen.getByText("process_cpu_seconds_total")).toBeInTheDocument();
+	});
+
+	it("shows a no-match message instead of an empty list when nothing matches the search text", async () => {
+		mockedFetchMetricNames.mockResolvedValue(["http_requests_total"]);
+
+		render(
+			<MetricList baseUrl="http://localhost:9090" machine="retrogaming" />,
+		);
+		await screen.findByText("http_requests_total");
+
+		fireEvent.change(screen.getByRole("searchbox"), {
+			target: { value: "does_not_exist" },
+		});
+
+		expect(screen.queryByText("http_requests_total")).not.toBeInTheDocument();
+		expect(
+			screen.getByText(/no metric matches "does_not_exist"/i),
+		).toBeInTheDocument();
+	});
+
+	it("does not show the search field when the machine has no metrics", async () => {
+		mockedFetchMetricNames.mockResolvedValue([]);
+
+		render(
+			<MetricList baseUrl="http://localhost:9090" machine="retrogaming" />,
+		);
+
+		await screen.findByText(/aucune métrique disponible pour cette machine/i);
+
+		expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
 	});
 });
