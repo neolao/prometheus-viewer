@@ -4,5 +4,5 @@
 **Files:** `src/api/prometheus.ts`
 **Exports:**
 - `fetchMetricNames(baseUrl: string): Promise<string[]>` — fetches all metric names via `GET {baseUrl}/api/v1/label/__name__/values`.
-- `fetchInstances(baseUrl: string): Promise<string[]>` — fetches all known `instance` label values (machines) via `GET {baseUrl}/api/v1/label/instance/values`.
+- `fetchMachines(baseUrl: string): Promise<string[]>` — fetches all known machine names via `GET {baseUrl}/api/v1/label/host/values` (the `host` label identifies a monitored machine; see `decisions/004`).
 **Depends on:** none

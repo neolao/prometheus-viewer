@@ -30,6 +30,6 @@ export function fetchMetricNames(baseUrl: string): Promise<string[]> {
 	return fetchLabelValues(baseUrl, "__name__");
 }
 
-export function fetchInstances(baseUrl: string): Promise<string[]> {
-	return fetchLabelValues(baseUrl, "instance");
+export function fetchMachines(baseUrl: string): Promise<string[]> {
+	return fetchLabelValues(baseUrl, "host");
 }

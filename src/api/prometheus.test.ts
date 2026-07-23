@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchInstances, fetchMetricNames } from "./prometheus";
+import { fetchMachines, fetchMetricNames } from "./prometheus";
 
 function mockFetchOnce(
 	response: Partial<Response> & { json?: () => Promise<unknown> },
@@ -97,46 +97,46 @@ describe("fetchMetricNames", () => {
 	});
 });
 
-describe("fetchInstances", () => {
+describe("fetchMachines", () => {
 	afterEach(() => {
 		vi.unstubAllGlobals();
 	});
 
-	it("returns the instance names from a successful response", async () => {
+	it("returns the machine names from a successful response", async () => {
 		mockFetchOnce({
 			ok: true,
 			json: () =>
 				Promise.resolve({
 					status: "success",
-					data: ["server-a:9100", "server-b:9100"],
+					data: ["retrogaming", "workstation"],
 				}),
 		});
 
-		const result = await fetchInstances("http://localhost:9090");
+		const result = await fetchMachines("http://localhost:9090");
 
-		expect(result).toEqual(["server-a:9100", "server-b:9100"]);
+		expect(result).toEqual(["retrogaming", "workstation"]);
 	});
 
-	it("requests the instance label values endpoint on the given base URL", async () => {
+	it("requests the host label values endpoint on the given base URL", async () => {
 		const fetchMock = mockFetchOnce({
 			ok: true,
 			json: () => Promise.resolve({ status: "success", data: [] }),
 		});
 
-		await fetchInstances("http://localhost:9090");
+		await fetchMachines("http://localhost:9090");
 
 		expect(fetchMock).toHaveBeenCalledWith(
-			"http://localhost:9090/api/v1/label/instance/values",
+			"http://localhost:9090/api/v1/label/host/values",
 		);
 	});
 
-	it("returns an empty array when Prometheus has no known instances", async () => {
+	it("returns an empty array when Prometheus has no known machines", async () => {
 		mockFetchOnce({
 			ok: true,
 			json: () => Promise.resolve({ status: "success", data: [] }),
 		});
 
-		const result = await fetchInstances("http://localhost:9090");
+		const result = await fetchMachines("http://localhost:9090");
 
 		expect(result).toEqual([]);
 	});
@@ -149,9 +149,7 @@ describe("fetchInstances", () => {
 			json: () => Promise.resolve({}),
 		});
 
-		await expect(fetchInstances("http://localhost:9090")).rejects.toThrow(
-			"502",
-		);
+		await expect(fetchMachines("http://localhost:9090")).rejects.toThrow("502");
 	});
 
 	it("throws with the Prometheus error message when the API reports an error status", async () => {
@@ -165,7 +163,7 @@ describe("fetchInstances", () => {
 				}),
 		});
 
-		await expect(fetchInstances("http://localhost:9090")).rejects.toThrow(
+		await expect(fetchMachines("http://localhost:9090")).rejects.toThrow(
 			"unknown label name",
 		);
 	});
@@ -176,7 +174,7 @@ describe("fetchInstances", () => {
 			vi.fn().mockRejectedValue(new Error("network error")),
 		);
 
-		await expect(fetchInstances("http://localhost:9090")).rejects.toThrow(
+		await expect(fetchMachines("http://localhost:9090")).rejects.toThrow(
 			"network error",
 		);
 	});

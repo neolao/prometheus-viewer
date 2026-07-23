@@ -5,6 +5,6 @@ A named time series exposed by the connected Prometheus server (e.g. `http_reque
 _Sources: `src/api/prometheus.ts`, `src/features/metrics/MetricList.tsx`_
 
 ## Machine
-The Prometheus instance the user chooses to work on, derived from the `instance` label values exposed by the connected Prometheus server. Selecting a machine gates and contextualizes the rest of the navigation (metric list, values, graphs).
+The physical or virtual host the user chooses to work on, derived from the `host` label values exposed by the connected Prometheus server (not the `instance` label, which on this server identifies probe targets rather than hosts — see `decisions/004`). Selecting a machine gates and contextualizes the rest of the navigation (metric list, values, graphs).
 **Do not confuse with:** [Metric](#metric) — a machine is the context a metric is queried within, not the measurement itself.
 _Sources: `src/api/prometheus.ts`, `src/features/machines/MachineSelector.tsx`, `src/App.tsx`_

@@ -1,46 +1,46 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchInstances } from "../../api/prometheus";
+import { fetchMachines } from "../../api/prometheus";
 import { MachineSelector } from "./MachineSelector";
 
 vi.mock("../../api/prometheus", () => ({
-	fetchInstances: vi.fn(),
+	fetchMachines: vi.fn(),
 }));
 
-const mockedFetchInstances = vi.mocked(fetchInstances);
+const mockedFetchMachines = vi.mocked(fetchMachines);
 
 describe("MachineSelector", () => {
 	afterEach(() => {
-		mockedFetchInstances.mockReset();
+		mockedFetchMachines.mockReset();
 	});
 
 	it("displays the fetched machine names", async () => {
-		mockedFetchInstances.mockResolvedValue(["server-a:9100", "server-b:9100"]);
+		mockedFetchMachines.mockResolvedValue(["retrogaming", "workstation"]);
 
 		render(
 			<MachineSelector baseUrl="http://localhost:9090" onSelect={vi.fn()} />,
 		);
 
-		expect(await screen.findByText("server-a:9100")).toBeInTheDocument();
-		expect(screen.getByText("server-b:9100")).toBeInTheDocument();
+		expect(await screen.findByText("retrogaming")).toBeInTheDocument();
+		expect(screen.getByText("workstation")).toBeInTheDocument();
 	});
 
 	it("calls onSelect with the chosen machine name when clicked", async () => {
-		mockedFetchInstances.mockResolvedValue(["server-a:9100", "server-b:9100"]);
+		mockedFetchMachines.mockResolvedValue(["retrogaming", "workstation"]);
 		const onSelect = vi.fn();
 
 		render(
 			<MachineSelector baseUrl="http://localhost:9090" onSelect={onSelect} />,
 		);
 
-		const option = await screen.findByText("server-b:9100");
+		const option = await screen.findByText("workstation");
 		fireEvent.click(option);
 
-		expect(onSelect).toHaveBeenCalledWith("server-b:9100");
+		expect(onSelect).toHaveBeenCalledWith("workstation");
 	});
 
 	it("shows a loading state before the machines arrive", () => {
-		mockedFetchInstances.mockReturnValue(new Promise(() => {}));
+		mockedFetchMachines.mockReturnValue(new Promise(() => {}));
 
 		render(
 			<MachineSelector baseUrl="http://localhost:9090" onSelect={vi.fn()} />,
@@ -50,7 +50,7 @@ describe("MachineSelector", () => {
 	});
 
 	it("shows a clear message when no machine is available", async () => {
-		mockedFetchInstances.mockResolvedValue([]);
+		mockedFetchMachines.mockResolvedValue([]);
 
 		render(
 			<MachineSelector baseUrl="http://localhost:9090" onSelect={vi.fn()} />,
@@ -62,7 +62,7 @@ describe("MachineSelector", () => {
 	});
 
 	it("shows an error message when the request fails", async () => {
-		mockedFetchInstances.mockRejectedValue(new Error("network error"));
+		mockedFetchMachines.mockRejectedValue(new Error("network error"));
 
 		render(
 			<MachineSelector baseUrl="http://localhost:9090" onSelect={vi.fn()} />,

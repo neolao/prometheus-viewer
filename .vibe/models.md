@@ -4,7 +4,7 @@
 | Field | Type | Notes |
 |---|---|---|
 | status | `"success" \| "error"` | Prometheus API result status |
-| data | `string[]` (optional) | Label values (metric names or instance names, depending on the queried label), present on success |
+| data | `string[]` (optional) | Label values (metric names or machine/host names, depending on the queried label), present on success |
 | error | `string` (optional) | Error message, present on error |
 | errorType | `string` (optional) | Prometheus error category, present on error |
 
@@ -23,7 +23,7 @@ Defined in: `src/features/metrics/MetricList.tsx`
 | Field | Type | Notes |
 |---|---|---|
 | status | `"loading" \| "success" \| "error"` | Discriminant |
-| machines | `string[]` | Present when `status === "success"` — `instance` label values |
+| machines | `string[]` | Present when `status === "success"` — `host` label values |
 | message | `string` | Present when `status === "error"` |
 
 Defined in: `src/features/machines/MachineSelector.tsx`

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchInstances } from "../../api/prometheus";
+import { fetchMachines } from "../../api/prometheus";
 
 interface MachineSelectorProps {
 	baseUrl: string;
@@ -18,7 +18,7 @@ export function MachineSelector({ baseUrl, onSelect }: MachineSelectorProps) {
 		let cancelled = false;
 		setState({ status: "loading" });
 
-		fetchInstances(baseUrl)
+		fetchMachines(baseUrl)
 			.then((machines) => {
 				if (!cancelled) {
 					setState({ status: "success", machines });

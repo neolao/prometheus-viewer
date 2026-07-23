@@ -4,7 +4,7 @@
 ## Modules
 - [`modules/app.md`](modules/app.md) — entry point and root UI shell of the SPA, gates the metrics view behind machine selection
 - [`modules/server.md`](modules/server.md) — Node.js server (dev + prod) serving the frontend and proxying/authenticating to Prometheus
-- [`modules/api-prometheus.md`](modules/api-prometheus.md) — client-side calls to this app's own server proxy (metric names, instance/machine names)
+- [`modules/api-prometheus.md`](modules/api-prometheus.md) — client-side calls to this app's own server proxy (metric names, machine/host names)
 - [`modules/machines.md`](modules/machines.md) — lets the user pick which Prometheus machine to work on
 - [`modules/metrics.md`](modules/metrics.md) — fetches and displays the list of available Prometheus metrics
 
