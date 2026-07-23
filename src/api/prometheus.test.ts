@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchMachines, fetchMetricNames } from "./prometheus";
+import {
+	fetchMachines,
+	fetchMetricMetadata,
+	fetchMetricNames,
+} from "./prometheus";
 
 function mockFetchOnce(
 	response: Partial<Response> & { json?: () => Promise<unknown> },
@@ -219,5 +223,103 @@ describe("fetchMachines", () => {
 		await expect(fetchMachines("http://localhost:9090")).rejects.toThrow(
 			"network error",
 		);
+	});
+});
+
+describe("fetchMetricMetadata", () => {
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	it("returns the type and help text from a successful response", async () => {
+		mockFetchOnce({
+			ok: true,
+			json: () =>
+				Promise.resolve({
+					status: "success",
+					data: {
+						http_requests_total: [
+							{ type: "counter", help: "Total number of HTTP requests." },
+						],
+					},
+				}),
+		});
+
+		const result = await fetchMetricMetadata(
+			"http://localhost:9090",
+			"http_requests_total",
+		);
+
+		expect(result).toEqual({
+			type: "counter",
+			help: "Total number of HTTP requests.",
+		});
+	});
+
+	it("requests the metadata endpoint scoped to the given metric name", async () => {
+		const fetchMock = mockFetchOnce({
+			ok: true,
+			json: () => Promise.resolve({ status: "success", data: {} }),
+		});
+
+		await fetchMetricMetadata("http://localhost:9090", "http_requests_total");
+
+		expect(fetchMock).toHaveBeenCalledWith(
+			"http://localhost:9090/api/v1/metadata?metric=http_requests_total",
+		);
+	});
+
+	it("returns null when Prometheus has no metadata for the metric", async () => {
+		mockFetchOnce({
+			ok: true,
+			json: () => Promise.resolve({ status: "success", data: {} }),
+		});
+
+		const result = await fetchMetricMetadata(
+			"http://localhost:9090",
+			"unknown_metric",
+		);
+
+		expect(result).toBeNull();
+	});
+
+	it("throws when the HTTP response is not ok", async () => {
+		mockFetchOnce({
+			ok: false,
+			status: 502,
+			statusText: "Bad Gateway",
+			json: () => Promise.resolve({}),
+		});
+
+		await expect(
+			fetchMetricMetadata("http://localhost:9090", "http_requests_total"),
+		).rejects.toThrow("502");
+	});
+
+	it("throws with the Prometheus error message when the API reports an error status", async () => {
+		mockFetchOnce({
+			ok: true,
+			json: () =>
+				Promise.resolve({
+					status: "error",
+					errorType: "bad_data",
+					error: "unknown metric name",
+				}),
+		});
+
+		await expect(
+			fetchMetricMetadata("http://localhost:9090", "http_requests_total"),
+		).rejects.toThrow("unknown metric name");
+	});
+
+	it("propagates a network failure", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn().mockRejectedValue(new Error("network error")),
+		);
+
+		await expect(
+			fetchMetricMetadata("http://localhost:9090", "http_requests_total"),
+		).rejects.toThrow("network error");
 	});
 });

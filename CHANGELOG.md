@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Users can now select which machine to work on before browsing its metrics; the choice stays visible while navigating.
 - The metric list now only shows metrics exposed by the selected machine, with a clear message when that machine has none.
 - Users can now search the metric list by text to quickly find a metric in a long list, with a clear message when nothing matches.
+- Users can now click on a metric in the list to see its Prometheus type and description, with a clear message when that information isn't available.
 
 ## [0.1.0] - 2026-07-23
 
