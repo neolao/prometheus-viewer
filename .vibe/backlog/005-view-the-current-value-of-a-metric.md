@@ -1,5 +1,5 @@
 ---
-status: todo
+status: in_progress
 depends_on: [001]
 ---
 # View The Current Value Of A Metric

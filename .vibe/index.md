@@ -4,9 +4,9 @@
 ## Modules
 - [`modules/app.md`](modules/app.md) — entry point and root UI shell of the SPA, gates the metrics view behind machine selection and passes the choice down to scope the metric list
 - [`modules/server.md`](modules/server.md) — Node.js server (dev + prod) serving the frontend and proxying/authenticating to Prometheus
-- [`modules/api-prometheus.md`](modules/api-prometheus.md) — client-side calls to this app's own server proxy (metric names optionally scoped by machine, machine/host names)
+- [`modules/api-prometheus.md`](modules/api-prometheus.md) — client-side calls to this app's own server proxy (metric names optionally scoped by machine, machine/host names, and a metric's current value scoped by machine)
 - [`modules/machines.md`](modules/machines.md) — lets the user pick which Prometheus machine to work on
-- [`modules/metrics.md`](modules/metrics.md) — fetches and displays the list of Prometheus metrics exposed by the selected machine, with client-side text search to narrow it further
+- [`modules/metrics.md`](modules/metrics.md) — fetches and displays the list of Prometheus metrics exposed by the selected machine, with client-side text search to narrow it further and a per-metric current-value view on click
 
 ## Observed patterns
 - React 19 functional components, no class components

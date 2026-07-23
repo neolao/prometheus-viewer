@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchMachines, fetchMetricNames } from "./prometheus";
+import {
+	fetchMachines,
+	fetchMetricNames,
+	fetchMetricValue,
+} from "./prometheus";
 
 function mockFetchOnce(
 	response: Partial<Response> & { json?: () => Promise<unknown> },
@@ -219,5 +223,197 @@ describe("fetchMachines", () => {
 		await expect(fetchMachines("http://localhost:9090")).rejects.toThrow(
 			"network error",
 		);
+	});
+});
+
+describe("fetchMetricValue", () => {
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	it("returns the current value for a single-series metric", async () => {
+		mockFetchOnce({
+			ok: true,
+			json: () =>
+				Promise.resolve({
+					status: "success",
+					data: {
+						resultType: "vector",
+						result: [
+							{
+								metric: {
+									__name__: "http_requests_total",
+									host: "retrogaming",
+								},
+								value: [1700000000, "42"],
+							},
+						],
+					},
+				}),
+		});
+
+		const result = await fetchMetricValue(
+			"http://localhost:9090",
+			"http_requests_total",
+			"retrogaming",
+		);
+
+		expect(result).toEqual([
+			{
+				labels: { __name__: "http_requests_total", host: "retrogaming" },
+				value: "42",
+			},
+		]);
+	});
+
+	it("requests the instant query endpoint with a PromQL expression scoped to the given machine", async () => {
+		const fetchMock = mockFetchOnce({
+			ok: true,
+			json: () =>
+				Promise.resolve({
+					status: "success",
+					data: { resultType: "vector", result: [] },
+				}),
+		});
+
+		await fetchMetricValue(
+			"http://localhost:9090",
+			"http_requests_total",
+			"retrogaming",
+		);
+
+		expect(fetchMock).toHaveBeenCalledWith(
+			"http://localhost:9090/api/v1/query?query=http_requests_total%7Bhost%3D%22retrogaming%22%7D",
+		);
+	});
+
+	it("returns one sample per series when the metric has multiple series for the machine", async () => {
+		mockFetchOnce({
+			ok: true,
+			json: () =>
+				Promise.resolve({
+					status: "success",
+					data: {
+						resultType: "vector",
+						result: [
+							{
+								metric: { __name__: "http_requests_total", method: "GET" },
+								value: [1700000000, "10"],
+							},
+							{
+								metric: { __name__: "http_requests_total", method: "POST" },
+								value: [1700000000, "5"],
+							},
+						],
+					},
+				}),
+		});
+
+		const result = await fetchMetricValue(
+			"http://localhost:9090",
+			"http_requests_total",
+			"retrogaming",
+		);
+
+		expect(result).toEqual([
+			{
+				labels: { __name__: "http_requests_total", method: "GET" },
+				value: "10",
+			},
+			{
+				labels: { __name__: "http_requests_total", method: "POST" },
+				value: "5",
+			},
+		]);
+	});
+
+	it("returns an empty array when the metric has no current value for the machine", async () => {
+		mockFetchOnce({
+			ok: true,
+			json: () =>
+				Promise.resolve({
+					status: "success",
+					data: { resultType: "vector", result: [] },
+				}),
+		});
+
+		const result = await fetchMetricValue(
+			"http://localhost:9090",
+			"http_requests_total",
+			"retrogaming",
+		);
+
+		expect(result).toEqual([]);
+	});
+
+	it("throws when the HTTP response is not ok", async () => {
+		mockFetchOnce({
+			ok: false,
+			status: 502,
+			statusText: "Bad Gateway",
+			json: () => Promise.resolve({}),
+		});
+
+		await expect(
+			fetchMetricValue(
+				"http://localhost:9090",
+				"http_requests_total",
+				"retrogaming",
+			),
+		).rejects.toThrow("502");
+	});
+
+	it("throws with the Prometheus error message when the API reports an error status", async () => {
+		mockFetchOnce({
+			ok: true,
+			json: () =>
+				Promise.resolve({
+					status: "error",
+					errorType: "bad_data",
+					error: "invalid query",
+				}),
+		});
+
+		await expect(
+			fetchMetricValue(
+				"http://localhost:9090",
+				"http_requests_total",
+				"retrogaming",
+			),
+		).rejects.toThrow("invalid query");
+	});
+
+	it("propagates a network failure", async () => {
+		vi.stubGlobal(
+			"fetch",
+			vi.fn().mockRejectedValue(new Error("network error")),
+		);
+
+		await expect(
+			fetchMetricValue(
+				"http://localhost:9090",
+				"http_requests_total",
+				"retrogaming",
+			),
+		).rejects.toThrow("network error");
+	});
+
+	it("throws a clear error when the response payload is malformed", async () => {
+		mockFetchOnce({
+			ok: true,
+			json: () =>
+				Promise.resolve({
+					status: "success",
+					data: { resultType: "vector" },
+				}),
+		});
+
+		await expect(
+			fetchMetricValue(
+				"http://localhost:9090",
+				"http_requests_total",
+				"retrogaming",
+			),
+		).rejects.toThrow(/malformed/i);
 	});
 });

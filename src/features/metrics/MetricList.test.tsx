@@ -7,6 +7,20 @@ vi.mock("../../api/prometheus", () => ({
 	fetchMetricNames: vi.fn(),
 }));
 
+vi.mock("./MetricValue", () => ({
+	MetricValue: ({
+		metricName,
+		machine,
+		baseUrl,
+	}: {
+		metricName: string;
+		machine: string;
+		baseUrl: string;
+	}) => (
+		<div data-testid="metric-value">{`${metricName}|${machine}|${baseUrl}`}</div>
+	),
+}));
+
 const mockedFetchMetricNames = vi.mocked(fetchMetricNames);
 
 describe("MetricList", () => {
@@ -193,5 +207,51 @@ describe("MetricList", () => {
 		await screen.findByText(/aucune métrique disponible pour cette machine/i);
 
 		expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
+	});
+
+	it("does not show a metric's value until it is clicked", async () => {
+		mockedFetchMetricNames.mockResolvedValue(["http_requests_total"]);
+
+		render(
+			<MetricList baseUrl="http://localhost:9090" machine="retrogaming" />,
+		);
+		await screen.findByText("http_requests_total");
+
+		expect(screen.queryByTestId("metric-value")).not.toBeInTheDocument();
+	});
+
+	it("shows the clicked metric's value, scoped to the current machine and server", async () => {
+		mockedFetchMetricNames.mockResolvedValue(["http_requests_total"]);
+
+		render(
+			<MetricList baseUrl="http://localhost:9090" machine="retrogaming" />,
+		);
+		await screen.findByText("http_requests_total");
+
+		fireEvent.click(screen.getByText("http_requests_total"));
+
+		expect(screen.getByTestId("metric-value")).toHaveTextContent(
+			"http_requests_total|retrogaming|http://localhost:9090",
+		);
+	});
+
+	it("shows only one metric's value at a time, switching when a different metric is clicked", async () => {
+		mockedFetchMetricNames.mockResolvedValue([
+			"http_requests_total",
+			"process_cpu_seconds_total",
+		]);
+
+		render(
+			<MetricList baseUrl="http://localhost:9090" machine="retrogaming" />,
+		);
+		await screen.findByText("http_requests_total");
+
+		fireEvent.click(screen.getByText("http_requests_total"));
+		fireEvent.click(screen.getByText("process_cpu_seconds_total"));
+
+		expect(screen.getAllByTestId("metric-value")).toHaveLength(1);
+		expect(screen.getByTestId("metric-value")).toHaveTextContent(
+			"process_cpu_seconds_total|retrogaming|http://localhost:9090",
+		);
 	});
 });
