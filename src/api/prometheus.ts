@@ -5,8 +5,11 @@ interface PrometheusLabelValuesResponse {
 	errorType?: string;
 }
 
-export async function fetchMetricNames(baseUrl: string): Promise<string[]> {
-	const response = await fetch(`${baseUrl}/api/v1/label/__name__/values`);
+async function fetchLabelValues(
+	baseUrl: string,
+	labelName: string,
+): Promise<string[]> {
+	const response = await fetch(`${baseUrl}/api/v1/label/${labelName}/values`);
 
 	if (!response.ok) {
 		throw new Error(
@@ -21,4 +24,12 @@ export async function fetchMetricNames(baseUrl: string): Promise<string[]> {
 	}
 
 	return body.data ?? [];
+}
+
+export function fetchMetricNames(baseUrl: string): Promise<string[]> {
+	return fetchLabelValues(baseUrl, "__name__");
+}
+
+export function fetchInstances(baseUrl: string): Promise<string[]> {
+	return fetchLabelValues(baseUrl, "instance");
 }

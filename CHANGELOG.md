@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Users can now select which machine to work on before browsing its metrics; the choice stays visible while navigating.
+
 ## [0.1.0] - 2026-07-23
 
 ### Added
