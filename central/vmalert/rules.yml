@@ -1,0 +1,44 @@
+groups:
+  - name: system
+    rules:
+      - alert: HostDown
+        expr: (time() - host_last_seen_timestamp) > 180
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.host }} ne remonte plus de métriques depuis 3 min"
+
+      - alert: DiskSpaceLow
+        expr: disk_free_percent < 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Espace disque faible sur {{ $labels.host }} ({{ $value }}% libre)"
+
+      - alert: CpuHigh
+        expr: cpu_usage_percent > 90
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU élevé sur {{ $labels.host }} ({{ $value }}%)"
+
+  - name: websites
+    rules:
+      - alert: SiteDown
+        expr: probe_success == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Site {{ $labels.instance }} injoignable"
+
+      - alert: SiteSlow
+        expr: probe_duration_seconds > 3
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Site {{ $labels.instance }} lent ({{ $value }}s de réponse)"

@@ -1,0 +1,20 @@
+global:
+  scrape_interval: 30s
+
+scrape_configs:
+  - job_name: 'blackbox_http'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          # Liste tes sites web à surveiller ici :
+          - https://exemple1.fr
+          - https://exemple2.fr
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox_exporter:9115

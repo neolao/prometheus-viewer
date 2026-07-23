@@ -1,0 +1,112 @@
+services:
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:v1.102.0
+    container_name: victoriametrics
+    restart: unless-stopped
+    volumes:
+      - vmdata:/storage
+    command:
+      - "--storageDataPath=/storage"
+      - "--retentionPeriod=12"          # rétention en mois, à ajuster
+    expose:
+      - "8428"
+    networks:
+      - monitoring
+
+  blackbox_exporter:
+    image: prom/blackbox-exporter:latest
+    container_name: blackbox_exporter
+    restart: unless-stopped
+    volumes:
+      - ./blackbox/blackbox.yml:/config/blackbox.yml:ro
+    command:
+      - "--config.file=/config/blackbox.yml"
+    expose:
+      - "9115"
+    networks:
+      - monitoring
+
+  # vmagent scrape blackbox_exporter (probes sites web) et pousse vers VictoriaMetrics.
+  # Les métriques des machines distantes arrivent, elles, directement en HTTP via curl (pas besoin de vmagent pour ça).
+  vmagent:
+    image: victoriametrics/vmagent:v1.102.0
+    container_name: vmagent
+    restart: unless-stopped
+    volumes:
+      - ./vmagent/scrape.yml:/etc/vmagent/scrape.yml:ro
+      - vmagentdata:/vmagentdata
+    command:
+      - "--promscrape.config=/etc/vmagent/scrape.yml"
+      - "--remoteWrite.url=http://victoriametrics:8428/api/v1/write"
+    networks:
+      - monitoring
+    depends_on:
+      - victoriametrics
+      - blackbox_exporter
+
+  # vmalert évalue les règles d'alerte (PromQL) et notifie Alertmanager.
+  # VictoriaMetrics seul ne fait pas ce travail, vmalert est le composant dédié.
+  vmalert:
+    image: victoriametrics/vmalert:v1.102.0
+    container_name: vmalert
+    restart: unless-stopped
+    volumes:
+      - ./vmalert/rules.yml:/etc/vmalert/rules.yml:ro
+    command:
+      - "--datasource.url=http://victoriametrics:8428"
+      - "--remoteWrite.url=http://victoriametrics:8428"
+      - "--remoteRead.url=http://victoriametrics:8428"
+      - "--rule=/etc/vmalert/rules.yml"
+      - "--notifier.url=http://alertmanager:9093/alertmanager"
+      - "--evaluationInterval=30s"
+    networks:
+      - monitoring
+    depends_on:
+      - victoriametrics
+      - alertmanager
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    restart: unless-stopped
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanagerdata:/alertmanager
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--web.external-url=https://${DOMAIN}/alertmanager"
+      - "--web.route-prefix=/alertmanager"
+    expose:
+      - "9093"
+    networks:
+      - monitoring
+
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./logs:/var/log/caddy
+      - caddy_data:/data
+      - caddy_config:/config
+    env_file:
+      - .env
+    networks:
+      - monitoring
+    depends_on:
+      - victoriametrics
+      - alertmanager
+
+networks:
+  monitoring:
+
+volumes:
+  vmdata:
+  vmagentdata:
+  alertmanagerdata:
+  caddy_data:
+  caddy_config:

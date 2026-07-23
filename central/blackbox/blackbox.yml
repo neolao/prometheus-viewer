@@ -1,0 +1,14 @@
+modules:
+  http_2xx:
+    prober: http
+    timeout: 5s
+    http:
+      method: GET
+      valid_status_codes: []       # vide = accepte tout 2xx par défaut
+      follow_redirects: true
+      fail_if_ssl: false
+      fail_if_not_ssl: false       # passe à true si tu veux exiger du HTTPS
+      preferred_ip_protocol: "ip4" # le conteneur n'a pas de route IPv6
+      ip_protocol_fallback: false
+      tls_config:
+        insecure_skip_verify: false

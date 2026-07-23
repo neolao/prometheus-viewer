@@ -1,0 +1,26 @@
+route:
+  receiver: telegram-warning
+  group_by: ['alertname']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    - match:
+        severity: critical
+      receiver: telegram-critical
+
+receivers:
+  - name: telegram-warning
+    telegram_configs:
+      - bot_token: "REMPLACE_MOI_TOKEN_BOTFATHER"
+        chat_id: 0  # REMPLACE_MOI par ton chat_id (@userinfobot)
+        parse_mode: ''
+
+  - name: telegram-critical
+    telegram_configs:
+      - bot_token: "REMPLACE_MOI_TOKEN_BOTFATHER"
+        chat_id: 0  # REMPLACE_MOI, peut être le même chat ou un autre (groupe dédié aux critiques par ex.)
+        parse_mode: ''
+
+# Note : ce fichier n'est PAS interpolé avec les variables du .env — remplace
+# directement les valeurs ci-dessus avant de démarrer Alertmanager.
