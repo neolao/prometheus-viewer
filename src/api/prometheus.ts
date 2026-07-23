@@ -25,6 +25,31 @@ export interface MetricSample {
 	value: string;
 }
 
+interface PrometheusRangeQueryResult {
+	metric: Record<string, string>;
+	values: [number, string][];
+}
+
+interface PrometheusRangeQueryResponse {
+	status: "success" | "error";
+	data?: {
+		resultType: string;
+		result: PrometheusRangeQueryResult[];
+	};
+	error?: string;
+	errorType?: string;
+}
+
+export interface MetricRangePoint {
+	timestamp: number;
+	value: string;
+}
+
+export interface MetricRangeSeries {
+	labels: Record<string, string>;
+	points: MetricRangePoint[];
+}
+
 async function fetchLabelValues(
 	baseUrl: string,
 	labelName: string,
@@ -94,4 +119,53 @@ export async function fetchMetricValue(
 		labels: series.metric,
 		value: series.value[1],
 	}));
+}
+
+export async function fetchMetricRange(
+	baseUrl: string,
+	metricName: string,
+	machine: string,
+	start: number,
+	end: number,
+	step: number,
+): Promise<MetricRangeSeries[]> {
+	const query = `${metricName}{host="${machine}"}`;
+	const response = await fetch(
+		`${baseUrl}/api/v1/query_range?${new URLSearchParams({
+			query,
+			start: String(start),
+			end: String(end),
+			step: String(step),
+		}).toString()}`,
+	);
+
+	if (!response.ok) {
+		throw new Error(
+			`Prometheus request failed: ${response.status} ${response.statusText}`,
+		);
+	}
+
+	const body = (await response.json()) as PrometheusRangeQueryResponse;
+
+	if (body.status === "error") {
+		throw new Error(body.error ?? "Prometheus API returned an error");
+	}
+
+	if (!Array.isArray(body.data?.result)) {
+		throw new Error("Malformed Prometheus response");
+	}
+
+	return body.data.result.map((series) => {
+		if (!Array.isArray(series.values)) {
+			throw new Error("Malformed Prometheus response");
+		}
+
+		return {
+			labels: series.metric,
+			points: series.values.map(([timestamp, value]) => ({
+				timestamp,
+				value,
+			})),
+		};
+	});
 }

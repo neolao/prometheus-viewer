@@ -30,6 +30,22 @@ Defined in: `src/api/prometheus.ts`
 
 Defined in: `src/api/prometheus.ts`
 
+## MetricRangePoint
+| Field | Type | Notes |
+|---|---|---|
+| timestamp | `number` | Unix seconds |
+| value | `string` | The series' value at that timestamp |
+
+Defined in: `src/api/prometheus.ts`
+
+## MetricRangeSeries
+| Field | Type | Notes |
+|---|---|---|
+| labels | `Record<string, string>` | The series' label set, as returned by Prometheus |
+| points | `MetricRangePoint[]` | Ordered points over the queried time range |
+
+Defined in: `src/api/prometheus.ts`
+
 ## MetricValue load state
 | Field | Type | Notes |
 |---|---|---|
@@ -47,6 +63,15 @@ Defined in: `src/features/metrics/MetricValue.tsx`
 | message | `string` | Present when `status === "error"` |
 
 Defined in: `src/features/metrics/MetricList.tsx`
+
+## MetricChart load state
+| Field | Type | Notes |
+|---|---|---|
+| status | `"idle" \| "loading" \| "success" \| "error"` | Discriminant — `"idle"` while a custom range is selected but not yet applied |
+| series | `MetricRangeSeries[]` | Present when `status === "success"` |
+| message | `string` | Present when `status === "error"` |
+
+Defined in: `src/features/metrics/MetricChart.tsx`
 
 ## MachineSelector load state
 | Field | Type | Notes |

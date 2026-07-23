@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchMetricNames } from "../../api/prometheus";
+import { MetricChart } from "./MetricChart";
 import { MetricValue } from "./MetricValue";
 
 interface MetricListProps {
@@ -78,11 +79,18 @@ export function MetricList({ baseUrl, machine }: MetricListProps) {
 								{metricName}
 							</button>
 							{selectedMetric === metricName && (
-								<MetricValue
-									baseUrl={baseUrl}
-									machine={machine}
-									metricName={metricName}
-								/>
+								<>
+									<MetricValue
+										baseUrl={baseUrl}
+										machine={machine}
+										metricName={metricName}
+									/>
+									<MetricChart
+										baseUrl={baseUrl}
+										machine={machine}
+										metricName={metricName}
+									/>
+								</>
 							)}
 						</li>
 					))}

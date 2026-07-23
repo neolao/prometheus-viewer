@@ -21,6 +21,20 @@ vi.mock("./MetricValue", () => ({
 	),
 }));
 
+vi.mock("./MetricChart", () => ({
+	MetricChart: ({
+		metricName,
+		machine,
+		baseUrl,
+	}: {
+		metricName: string;
+		machine: string;
+		baseUrl: string;
+	}) => (
+		<div data-testid="metric-chart">{`${metricName}|${machine}|${baseUrl}`}</div>
+	),
+}));
+
 const mockedFetchMetricNames = vi.mocked(fetchMetricNames);
 
 describe("MetricList", () => {

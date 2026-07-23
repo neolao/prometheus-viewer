@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The metric list now only shows metrics exposed by the selected machine, with a clear message when that machine has none.
 - Users can now search the metric list by text to quickly find a metric in a long list, with a clear message when nothing matches.
 - Users can now click a metric to see its current value on the selected machine, with each distinct series shown separately and a clear message when no value or the request fails.
+- Users can now see a metric's evolution over time as a graph, with a choice of predefined time ranges (last hour / 6h / 24h / 7 days) or a custom start/end, and a clear message when the request fails or there is no data for the chosen range.
 
 ## [0.1.0] - 2026-07-23
 
