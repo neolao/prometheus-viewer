@@ -5,31 +5,31 @@
 
 ## Project overview
 
-Une web UI qui consomme l'API Prometheus pour visualiser des métriques et exécuter des requêtes PromQL. Un serveur Node.js (utilisé en dev comme en prod) sert le frontend et relaie les requêtes vers Prometheus en y injectant lui-même l'authentification HTTP Basic configurée côté serveur — le navigateur ne parle jamais directement à Prometheus et n'a jamais accès aux identifiants (voir `.vibe/decisions/003-node-server-injects-prometheus-credentials.md`).
+A web UI that consumes the Prometheus API to visualize metrics and run PromQL queries. A Node.js server (used in both dev and prod) serves the frontend and relays requests to Prometheus, injecting the server-side-configured HTTP Basic authentication itself — the browser never talks to Prometheus directly and never has access to the credentials (see `.vibe/decisions/003-node-server-injects-prometheus-credentials.md`).
 
 **Stack:** Node.js 22 / TypeScript / React 19 / Vite / Express / Vitest + Testing Library + Supertest / Biome
-**Type:** full-stack (frontend SPA + serveur Node.js/Express)
+**Type:** full-stack (frontend SPA + Node.js/Express server)
 
 ## Architecture
 
 ```
 prometheus-viewer/
 ├── src/
-│   ├── main.tsx                  # point d'entrée, monte <App /> dans #root
-│   ├── App.tsx                    # composant racine
-│   ├── App.test.tsx                # tests du composant racine
-│   ├── index.css                   # styles globaux
-│   ├── api/prometheus.ts            # client HTTP vers /prom-api (le proxy du serveur)
-│   ├── features/metrics/            # affichage de la liste des métriques
-│   └── test/setup.ts                # setup Vitest (jest-dom)
+│   ├── main.tsx                  # entry point, mounts <App /> into #root
+│   ├── App.tsx                    # root component
+│   ├── App.test.tsx                # root component tests
+│   ├── index.css                   # global styles
+│   ├── api/prometheus.ts            # HTTP client to /prom-api (the server's proxy)
+│   ├── features/metrics/            # metric list display
+│   └── test/setup.ts                # Vitest setup (jest-dom)
 ├── server/
-│   ├── index.ts                   # point d'entrée du serveur (dev: middleware Vite / prod: fichiers statiques)
-│   └── createApp.ts                # fabrique de l'app Express + proxy Prometheus authentifié
-├── public/                        # assets statiques servis tels quels (favicon.svg)
-├── index.html                     # template HTML de Vite
-├── vite.config.ts                 # config Vite + Vitest (environment jsdom par défaut)
-├── biome.json                     # config lint/format Biome
-└── tsconfig*.json                 # config TypeScript
+│   ├── index.ts                   # server entry point (dev: Vite middleware / prod: static files)
+│   └── createApp.ts                # Express app factory + authenticated Prometheus proxy
+├── public/                        # static assets served as-is (favicon.svg)
+├── index.html                     # Vite HTML template
+├── vite.config.ts                 # Vite + Vitest config (jsdom environment by default)
+├── biome.json                     # Biome lint/format config
+└── tsconfig*.json                 # TypeScript config
 ```
 
 <!-- The import below loads the compact codebase map into every session. It is maintained by /vibe:sync; details (modules/, models.md, glossary.md) stay on-demand. -->
@@ -89,6 +89,7 @@ If tests or lint fail:
 
 ## Constraints
 
+- Everything must be written in English: documentation, code, comments, commit messages, and backlog items. Never write project content in any other language.
 - Never leave dead code or unused imports
 - Never hardcode secrets or Prometheus credentials — configure them via server-only environment variables (`PROMETHEUS_URL`, `PROMETHEUS_USERNAME`, `PROMETHEUS_PASSWORD`, see `.env.example`), **never** with a `VITE_` prefix — anything prefixed `VITE_` is bundled into the public client JS and readable by any visitor
 - The browser must never call a Prometheus server directly or hold its credentials — always go through this app's own server proxy (`/prom-api`)
