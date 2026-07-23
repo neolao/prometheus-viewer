@@ -12,15 +12,15 @@ route:
 receivers:
   - name: telegram-warning
     telegram_configs:
-      - bot_token: "REMPLACE_MOI_TOKEN_BOTFATHER"
-        chat_id: 0  # REMPLACE_MOI par ton chat_id (@userinfobot)
+      - bot_token: "REPLACE_ME_BOTFATHER_TOKEN"
+        chat_id: 0  # REPLACE_ME with your chat_id (@userinfobot)
         parse_mode: ''
 
   - name: telegram-critical
     telegram_configs:
-      - bot_token: "REMPLACE_MOI_TOKEN_BOTFATHER"
-        chat_id: 0  # REMPLACE_MOI, peut être le même chat ou un autre (groupe dédié aux critiques par ex.)
+      - bot_token: "REPLACE_ME_BOTFATHER_TOKEN"
+        chat_id: 0  # REPLACE_ME, can be the same chat or a different one (e.g. a dedicated group for critical alerts)
         parse_mode: ''
 
-# Note : ce fichier n'est PAS interpolé avec les variables du .env — remplace
-# directement les valeurs ci-dessus avant de démarrer Alertmanager.
+# Note: this file is NOT interpolated with the .env variables — replace
+# the values above directly before starting Alertmanager.

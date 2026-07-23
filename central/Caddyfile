@@ -5,7 +5,7 @@
 		format json
 	}
 
-	# Alertmanager : pas de login natif, on protège l'accès à son interface.
+	# Alertmanager: no built-in login, so we protect access to its UI.
 	handle /alertmanager* {
 		basicauth {
 			{$ADMIN_USER} {$ADMIN_PASS_HASH}
@@ -13,7 +13,7 @@
 		reverse_proxy alertmanager:9093
 	}
 
-	# Ingestion : endpoints d'écriture utilisés par le script bash sur chaque machine.
+	# Ingestion: write endpoints used by the bash script on each machine.
 	handle /api/v1/import/* {
 		basicauth {
 			{$WRITE_USER} {$WRITE_PASS_HASH}
@@ -28,9 +28,9 @@
 		reverse_proxy victoriametrics:8428
 	}
 
-	# Lecture : utilisé par Grafana (hébergé chez toi) pour interroger les données.
-	# Identifiants séparés de ceux d'écriture — un client qui pousse des métriques
-	# ne peut pas lire les données, et inversement.
+	# Read: used by Grafana (hosted on your side) to query the data.
+	# Credentials separate from the write ones — a client that pushes metrics
+	# cannot read the data, and vice versa.
 	handle /api/v1/query* {
 		basicauth {
 			{$READ_USER} {$READ_PASS_HASH}

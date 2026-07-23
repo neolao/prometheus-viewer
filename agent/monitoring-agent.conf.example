@@ -1,11 +1,11 @@
-# Config de l'agent de monitoring — à copier vers /etc/monitoring-agent.conf sur chaque machine
-# chmod 600 recommandé (contient un mot de passe)
+# Monitoring agent config — copy to /etc/monitoring-agent.conf on each machine
+# chmod 600 recommended (contains a password)
 
 DOMAIN="monitoring2.neolao.com"
 WRITE_USER="writer"
-WRITE_PASS="le_mot_de_passe_en_clair_du_compte_writer"
+WRITE_PASS="plaintext_password_of_the_writer_account"
 
-# Nom identifiant cette machine dans les métriques (label "host").
-# Laisse vide pour utiliser $(hostname) automatiquement, ou force une valeur
-# unique ici si plusieurs machines risquent de partager le même hostname.
+# Name identifying this machine in the metrics (the "host" label).
+# Leave empty to automatically use $(hostname), or force a
+# unique value here if multiple machines might share the same hostname.
 HOST_NAME=""

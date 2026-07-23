@@ -7,7 +7,7 @@ services:
       - vmdata:/storage
     command:
       - "--storageDataPath=/storage"
-      - "--retentionPeriod=12"          # rétention en mois, à ajuster
+      - "--retentionPeriod=12"          # retention in months, adjust as needed
     expose:
       - "8428"
     networks:
@@ -26,8 +26,8 @@ services:
     networks:
       - monitoring
 
-  # vmagent scrape blackbox_exporter (probes sites web) et pousse vers VictoriaMetrics.
-  # Les métriques des machines distantes arrivent, elles, directement en HTTP via curl (pas besoin de vmagent pour ça).
+  # vmagent scrapes blackbox_exporter (website probes) and pushes to VictoriaMetrics.
+  # Metrics from remote machines arrive directly over HTTP via curl (no vmagent needed for that).
   vmagent:
     image: victoriametrics/vmagent:v1.102.0
     container_name: vmagent
@@ -44,8 +44,8 @@ services:
       - victoriametrics
       - blackbox_exporter
 
-  # vmalert évalue les règles d'alerte (PromQL) et notifie Alertmanager.
-  # VictoriaMetrics seul ne fait pas ce travail, vmalert est le composant dédié.
+  # vmalert evaluates alerting rules (PromQL) and notifies Alertmanager.
+  # VictoriaMetrics alone doesn't do this job; vmalert is the dedicated component.
   vmalert:
     image: victoriametrics/vmalert:v1.102.0
     container_name: vmalert

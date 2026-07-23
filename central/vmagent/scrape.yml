@@ -8,9 +8,9 @@ scrape_configs:
       module: [http_2xx]
     static_configs:
       - targets:
-          # Liste tes sites web à surveiller ici :
-          - https://exemple1.fr
-          - https://exemple2.fr
+          # List the websites to monitor here:
+          - https://example1.com
+          - https://example2.com
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target

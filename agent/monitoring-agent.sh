@@ -1,12 +1,12 @@
 #!/bin/bash
-# Agent de monitoring — collecte CPU/RAM/disque/uptime + heartbeat, pousse vers VictoriaMetrics.
-# À lancer via cron, ex: */2 * * * * /usr/local/bin/monitoring-agent.sh
+# Monitoring agent — collects CPU/RAM/disk/uptime + heartbeat, pushes to VictoriaMetrics.
+# Run via cron, e.g.: */2 * * * * /usr/local/bin/monitoring-agent.sh
 
 set -euo pipefail
 
 CONF_FILE="/etc/monitoring-agent.conf"
 if [[ ! -f "$CONF_FILE" ]]; then
-	echo "Config manquante: $CONF_FILE" >&2
+	echo "Missing config: $CONF_FILE" >&2
 	exit 1
 fi
 # shellcheck source=/etc/monitoring-agent.conf
@@ -16,7 +16,7 @@ HOST="${HOST_NAME:-$(hostname)}"
 ENDPOINT="https://${DOMAIN}/api/v1/import/prometheus"
 TIMESTAMP="$(date +%s)"
 
-# --- CPU : mesure sur 1 seconde via /proc/stat ---
+# --- CPU: measured over 1 second via /proc/stat ---
 read -r _ u1 n1 s1 i1 w1 irq1 sirq1 _ < /proc/stat
 sleep 1
 read -r _ u2 n2 s2 i2 w2 irq2 sirq2 _ < /proc/stat
@@ -35,18 +35,18 @@ else
 	cpu_usage=0
 fi
 
-# --- RAM : pourcentage utilisé ---
+# --- RAM: percentage used ---
 mem_total=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
 mem_available=$(awk '/MemAvailable/ {print $2}' /proc/meminfo)
 mem_usage=$(( (1000 * (mem_total - mem_available) / mem_total + 5) / 10 ))
 
-# --- Disque : pourcentage libre sur / ---
+# --- Disk: percentage free on / ---
 disk_free=$(df -P / | awk 'NR==2 {gsub("%","",$5); print 100 - $5}')
 
-# --- Uptime en secondes ---
+# --- Uptime in seconds ---
 uptime_seconds=$(awk '{print int($1)}' /proc/uptime)
 
-# --- Construction du payload (format exposition Prometheus) ---
+# --- Building the payload (Prometheus exposition format) ---
 payload=$(cat << EOF
 host_last_seen_timestamp{host="${HOST}"} ${TIMESTAMP}
 cpu_usage_percent{host="${HOST}"} ${cpu_usage}
@@ -56,8 +56,8 @@ uptime_seconds{host="${HOST}"} ${uptime_seconds}
 EOF
 )
 
-# --- Envoi ---
+# --- Sending ---
 curl -s -o /dev/null -w "%{http_code}" \
 	-u "${WRITE_USER}:${WRITE_PASS}" \
 	--data-binary "${payload}" \
-	"${ENDPOINT}" | grep -q "^204$" || echo "Échec d'envoi vers ${ENDPOINT}" >&2
+	"${ENDPOINT}" | grep -q "^204$" || echo "Failed to send to ${ENDPOINT}" >&2
