@@ -1,20 +1,17 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchMetricMetadata, fetchMetricNames } from "../../api/prometheus";
+import { fetchMetricNames } from "../../api/prometheus";
 import { MetricList } from "./MetricList";
 
 vi.mock("../../api/prometheus", () => ({
 	fetchMetricNames: vi.fn(),
-	fetchMetricMetadata: vi.fn(),
 }));
 
 const mockedFetchMetricNames = vi.mocked(fetchMetricNames);
-const mockedFetchMetricMetadata = vi.mocked(fetchMetricMetadata);
 
 describe("MetricList", () => {
 	afterEach(() => {
 		mockedFetchMetricNames.mockReset();
-		mockedFetchMetricMetadata.mockReset();
 	});
 
 	it("displays the fetched metric names", async () => {
@@ -196,67 +193,5 @@ describe("MetricList", () => {
 		await screen.findByText(/aucune métrique disponible pour cette machine/i);
 
 		expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
-	});
-
-	it("does not show metric details before a metric is clicked", async () => {
-		mockedFetchMetricNames.mockResolvedValue(["http_requests_total"]);
-
-		render(
-			<MetricList baseUrl="http://localhost:9090" machine="retrogaming" />,
-		);
-		await screen.findByText("http_requests_total");
-
-		expect(mockedFetchMetricMetadata).not.toHaveBeenCalled();
-	});
-
-	it("shows the type and description of the metric clicked in the list", async () => {
-		mockedFetchMetricNames.mockResolvedValue(["http_requests_total"]);
-		mockedFetchMetricMetadata.mockResolvedValue({
-			type: "counter",
-			help: "Total number of HTTP requests.",
-		});
-
-		render(
-			<MetricList baseUrl="http://localhost:9090" machine="retrogaming" />,
-		);
-		await screen.findByText("http_requests_total");
-
-		fireEvent.click(screen.getByText("http_requests_total"));
-
-		expect(mockedFetchMetricMetadata).toHaveBeenCalledWith(
-			"http://localhost:9090",
-			"http_requests_total",
-		);
-		expect(await screen.findByText("counter")).toBeInTheDocument();
-		expect(
-			screen.getByText("Total number of HTTP requests."),
-		).toBeInTheDocument();
-	});
-
-	it("replaces the shown details when a different metric is clicked", async () => {
-		mockedFetchMetricNames.mockResolvedValue([
-			"http_requests_total",
-			"process_cpu_seconds_total",
-		]);
-		mockedFetchMetricMetadata.mockImplementation((_baseUrl, metricName) =>
-			Promise.resolve(
-				metricName === "http_requests_total"
-					? { type: "counter", help: "Total number of HTTP requests." }
-					: { type: "gauge", help: "CPU time spent in seconds." },
-			),
-		);
-
-		render(
-			<MetricList baseUrl="http://localhost:9090" machine="retrogaming" />,
-		);
-		await screen.findByText("http_requests_total");
-
-		fireEvent.click(screen.getByText("http_requests_total"));
-		expect(await screen.findByText("counter")).toBeInTheDocument();
-
-		fireEvent.click(screen.getByText("process_cpu_seconds_total"));
-
-		expect(await screen.findByText("gauge")).toBeInTheDocument();
-		expect(screen.queryByText("counter")).not.toBeInTheDocument();
 	});
 });

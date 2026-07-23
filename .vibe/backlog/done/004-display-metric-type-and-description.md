@@ -1,5 +1,5 @@
 ---
-status: done
+status: wontfix
 depends_on: [001]
 ---
 # Display Metric Type And Description
@@ -14,3 +14,5 @@ Clicking a metric in the list must let the user view its Prometheus type (`count
 
 ## Notes
 Prometheus endpoint: `GET {baseUrl}/api/v1/metadata`. This endpoint had been deferred for v1 in decision `.vibe/decisions/001-prometheus-metric-list-endpoint.md` ("can be adopted later if metric metadata becomes a requirement") — that requirement now exists.
+
+**Won't fix:** implemented, then removed — the user's actual backend (VictoriaMetrics, see `central/`) does not retain per-metric type/HELP metadata, and the reverse proxy in front of it does not route `/api/v1/metadata` either way. See `.vibe/decisions/006-drop-metric-type-and-description-feature.md`.

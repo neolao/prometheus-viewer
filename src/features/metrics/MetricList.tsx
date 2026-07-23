@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { fetchMetricNames } from "../../api/prometheus";
-import { MetricDetails } from "./MetricDetails";
 
 interface MetricListProps {
 	baseUrl: string;
@@ -15,12 +14,10 @@ type LoadState =
 export function MetricList({ baseUrl, machine }: MetricListProps) {
 	const [state, setState] = useState<LoadState>({ status: "loading" });
 	const [searchText, setSearchText] = useState("");
-	const [selectedMetric, setSelectedMetric] = useState<string | null>(null);
 
 	useEffect(() => {
 		let cancelled = false;
 		setState({ status: "loading" });
-		setSelectedMetric(null);
 
 		fetchMetricNames(baseUrl, machine)
 			.then((metricNames) => {
@@ -70,19 +67,9 @@ export function MetricList({ baseUrl, machine }: MetricListProps) {
 			) : (
 				<ul>
 					{filteredMetricNames.map((metricName) => (
-						<li key={metricName}>
-							<button
-								type="button"
-								onClick={() => setSelectedMetric(metricName)}
-							>
-								{metricName}
-							</button>
-						</li>
+						<li key={metricName}>{metricName}</li>
 					))}
 				</ul>
-			)}
-			{selectedMetric !== null && (
-				<MetricDetails baseUrl={baseUrl} metricName={selectedMetric} />
 			)}
 		</>
 	);

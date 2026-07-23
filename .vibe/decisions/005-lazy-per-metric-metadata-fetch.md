@@ -1,6 +1,6 @@
 ---
 date: 2026-07-23
-status: accepted
+status: superseded by 006
 ---
 # Fetch metric metadata lazily, scoped to one metric at a time
 
