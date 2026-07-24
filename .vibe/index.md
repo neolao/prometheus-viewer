@@ -6,7 +6,7 @@
 - [`modules/server.md`](modules/server.md) — Node.js server (dev + prod) serving the frontend and proxying/authenticating to Prometheus
 - [`modules/api-prometheus.md`](modules/api-prometheus.md) — client-side calls to this app's own server proxy (metric names optionally scoped by machine, machine/host names, a metric's current value scoped by machine, and a metric's evolution over a time range scoped by machine)
 - [`modules/machines.md`](modules/machines.md) — lets the user pick which Prometheus machine to work on
-- [`modules/metrics.md`](modules/metrics.md) — fetches and displays the list of Prometheus metrics exposed by the selected machine, with client-side text search to narrow it further, and per-metric current-value and evolution-over-time views on click
+- [`modules/metrics.md`](modules/metrics.md) — fetches and displays the list of Prometheus metrics exposed by the selected machine, with client-side text search to narrow it further, and per-metric current-value and interactive evolution-over-time views (hover tooltip, per-series legend toggle, drag-to-zoom on mouse and touch) on click
 
 ## Observed patterns
 - React 19 functional components, no class components
@@ -16,6 +16,7 @@
 - Async UI state modeled as a discriminated union (`{status: "loading" | "success" | "error", ...}`) rather than separate booleans
 - The browser never talks to Prometheus directly or holds its credentials — same-origin proxy through `server/`, sidestepping CORS entirely (see `decisions/003`)
 - Server-only config lives in non-`VITE_`-prefixed env vars (`PROMETHEUS_URL`, `PROMETHEUS_USERNAME`, `PROMETHEUS_PASSWORD`), read via `process.env`, never bundled for the client
+- Custom SVG charts (no charting library, see `decisions/007`) use unified Pointer Events for hover/tap/drag so the same code path drives both mouse and touch interaction (see `decisions/008`)
 
 ## Other context files
 - [`models.md`](models.md) — data models
